@@ -7,8 +7,7 @@
 
 #define VK_MAX_QUEUE_FAMILY 10
 
-struct vk_physical_device
-{
+struct vk_physical_device {
     VkPhysicalDevice physical_device;
     VkPhysicalDeviceProperties properties;
     VkPhysicalDeviceFeatures features;
@@ -19,8 +18,7 @@ struct vk_physical_device
     bool queue_families_incomplete;
 };
 
-struct vk_commands
-{
+struct vk_commands {
     VkQueueFlags qflags;
 
     VkCommandPool pool;
@@ -30,8 +28,7 @@ struct vk_commands
     uint32_t buffer_count;
 };
 
-struct vk_device
-{
+struct vk_device {
     VkDevice device;
     struct vk_commands *command_pools;
     uint32_t command_pool_count;
@@ -39,8 +36,7 @@ struct vk_device
 
 #define VK_MAX_PRESENT_MODES 4
 
-struct vk_swapchain
-{
+struct vk_swapchain {
     VkSurfaceKHR surface;
     VkSwapchainKHR swapchain;
     VkSurfaceFormatKHR surface_format;
@@ -49,8 +45,7 @@ struct vk_swapchain
     uint32_t present_modes_count;
 };
 
-struct vk_image
-{
+struct vk_image {
     VkFormat format;
     VkExtent2D extent;
     VkImageUsageFlagBits usage;
@@ -71,8 +66,7 @@ struct vk_image
     bool linear;
 };
 
-struct vk_buffer
-{
+struct vk_buffer {
     VkFormat format;
     uint32_t size;
     VkBufferUsageFlagBits usage;
@@ -86,15 +80,13 @@ struct vk_buffer
     VkBufferView view;
 };
 
-struct vk_shader
-{
+struct vk_shader {
     const char *spirv_file;
     VkShaderStageFlagBits stage;
     VkShaderModule shader;
 };
 
-struct vk_graphics_buffers
-{
+struct vk_graphics_buffers {
     VkExtent2D surface_size;
     VkImage swapchain_image;
     VkImageView color_view;
@@ -102,8 +94,7 @@ struct vk_graphics_buffers
     VkFramebuffer framebuffer;
 };
 
-struct vk_render_essentials
-{
+struct vk_render_essentials {
     VkImage *images;
     uint32_t image_count;
     VkQueue present_queue;
@@ -116,8 +107,7 @@ struct vk_render_essentials
     bool first_render;
 };
 
-struct vk_resources
-{
+struct vk_resources {
     struct vk_image *images;
     uint32_t image_count;
     struct vk_buffer *buffers;
@@ -129,38 +119,33 @@ struct vk_resources
     VkRenderPass render_pass;
 };
 
-struct vk_layout
-{
+struct vk_layout {
     struct vk_resources *resources;
     VkDescriptorSetLayout set_layout;
     VkPipelineLayout pipeline_layout;
 };
 
-struct vk_pipeline
-{
+struct vk_pipeline {
     struct vk_layout *layout;
     VkPipelineVertexInputStateCreateInfo vertex_input_state;
     VkPipelineInputAssemblyStateCreateInfo input_assembly_state;
     VkPipelineTessellationStateCreateInfo tessellation_state;
-    size_t thread_count;
+    uint32_t thread_count;
     VkPipeline pipeline;
     VkDescriptorPool set_pool;
 };
 
-enum vk_render_pass_load_op
-{
+enum vk_render_pass_load_op {
     VK_C_CLEAR = 0,
     VK_KEEP = 1,
 };
 
-enum vk_make_depth_buffer
-{
+enum vk_make_depth_buffer {
     VK_WITHOUT_DEPTH = 0,
     VK_WITH_DEPTH = 1,
 };
 
-struct vk_offscreen_buffers
-{
+struct vk_offscreen_buffers {
     VkExtent2D surface_size;
     struct vk_image color;
     struct vk_image depth;
@@ -168,7 +153,7 @@ struct vk_offscreen_buffers
 };
 
 
-struct app_data_struct{
+struct app_data_struct {
     int iResolution[2]; //resolution
     int iMouse[2]; //mouse in window, it always updated (not like iMouse on shadertoy)
     int iMouse_lclick[2]; //mouse left click pos (its -[last pos] when left mosue not clicked)
@@ -177,7 +162,7 @@ struct app_data_struct{
     float iTime; //time
     float iTimeDelta; //time delta
     int iFrame; //frames
-    
+
     bool pause; //pause clicked
     bool quit; //quit clicked/happend
     bool drawdebug; //draw debug info, key press
@@ -209,16 +194,16 @@ struct app_os_window {
     bool configured;
 #endif
     char name[APP_NAME_STR_LEN];
-    
+
     bool prepared; // is vk setup prepared
     bool is_minimized; //window controled events
     bool resize_event; //window controled events
     bool fps_lock; //key pressed event
     bool reload_shaders_on_resize; //launch option
     bool print_debug; //launch option
-    
+
     bool pause_refresh; //used only in Windows, on pause when key pressed refresh
-    
+
     VkPresentModeKHR present_mode;
     struct app_data_struct app_data;
 };

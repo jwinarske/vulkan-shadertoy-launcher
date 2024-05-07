@@ -8,6 +8,6 @@ layout (location = 0) out vec2 frag_pos;
 
 void main()
 {
-	gl_Position = vec4(in_pos.xyz, 1);
-	frag_pos = gl_Position.xy;
+    gl_Position = vec4(in_pos.xyz, 1);
+    frag_pos = gl_Position.xy;
 }
