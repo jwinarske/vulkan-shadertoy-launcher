@@ -5,11 +5,14 @@
 #ifndef vk_utils_printf_H
 #define vk_utils_printf_H
 
-#include <vulkan/vulkan.h>
 #include <cstdio>
 #include <cstring>
 #include <cstdarg>
 #include <cerrno>
+
+#define VULKAN_HPP_NO_EXCEPTIONS 1
+#define VULKAN_HPP_DISPATCH_LOADER_DYNAMIC 1
+#include <vulkan/vulkan.hpp>
 
 #ifdef _GNUC
 #define ATTR_UNUSED __attribute__((format(printf, 3, 4)))

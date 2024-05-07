@@ -6,10 +6,11 @@ vk_render_transition_images_screenshot_swapchain_begin(struct vk_device *dev, st
     VkResult res;
 
     vkResetCommandBuffer(essentials->cmd_buffer, 0);
-    VkCommandBufferBeginInfo begin_info = {
-            .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
-            .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,
-    };
+
+    VkCommandBufferBeginInfo begin_info{};
+    begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
     res = vkBeginCommandBuffer(essentials->cmd_buffer, &begin_info);
     vk_error_set_vkresult(&retval, res);
     if (res) {
@@ -17,56 +18,50 @@ vk_render_transition_images_screenshot_swapchain_begin(struct vk_device *dev, st
         return retval;
     }
 
-    VkImageMemoryBarrier image_barrier_dstImage = {
-            .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
-            .srcAccessMask = 0,
-            .dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT,
-            .oldLayout = VK_IMAGE_LAYOUT_UNDEFINED,
-            .newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-            .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-            .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-            .image = dstImage->image,
-            .subresourceRange = {
-                    .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-                    .baseMipLevel = 0,
-                    .levelCount = VK_REMAINING_MIP_LEVELS,
-                    .baseArrayLayer = 0,
-                    .layerCount = VK_REMAINING_ARRAY_LAYERS,
-            },
-    };
+    VkImageMemoryBarrier image_barrier_dstImage{};
+    image_barrier_dstImage.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+    image_barrier_dstImage.srcAccessMask = 0;
+    image_barrier_dstImage.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+    image_barrier_dstImage.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    image_barrier_dstImage.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+    image_barrier_dstImage.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    image_barrier_dstImage.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    image_barrier_dstImage.image = dstImage->image;
+    image_barrier_dstImage.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    image_barrier_dstImage.subresourceRange.baseMipLevel = 0;
+    image_barrier_dstImage.subresourceRange.levelCount = VK_REMAINING_MIP_LEVELS;
+    image_barrier_dstImage.subresourceRange.baseArrayLayer = 0;
+    image_barrier_dstImage.subresourceRange.layerCount = VK_REMAINING_ARRAY_LAYERS;
 
     vkCmdPipelineBarrier(essentials->cmd_buffer,
                          VK_PIPELINE_STAGE_TRANSFER_BIT,
                          VK_PIPELINE_STAGE_TRANSFER_BIT,
                          0,
-                         0, NULL,
-                         0, NULL,
+                         0, nullptr,
+                         0, nullptr,
                          1, &image_barrier_dstImage);
 
-    VkImageMemoryBarrier image_barrier_srcImage = {
-            .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
-            .srcAccessMask = VK_ACCESS_MEMORY_READ_BIT,
-            .dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT,
-            .oldLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-            .newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-            .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-            .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-            .image = srcImage->image,
-            .subresourceRange = {
-                    .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-                    .baseMipLevel = 0,
-                    .levelCount = VK_REMAINING_MIP_LEVELS,
-                    .baseArrayLayer = 0,
-                    .layerCount = VK_REMAINING_ARRAY_LAYERS,
-            },
-    };
+    VkImageMemoryBarrier image_barrier_srcImage{};
+    image_barrier_srcImage.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+    image_barrier_srcImage.srcAccessMask = VK_ACCESS_MEMORY_READ_BIT;
+    image_barrier_srcImage.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+    image_barrier_srcImage.oldLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+    image_barrier_srcImage.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+    image_barrier_srcImage.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    image_barrier_srcImage.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    image_barrier_srcImage.image = srcImage->image;
+    image_barrier_srcImage.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    image_barrier_srcImage.subresourceRange.baseMipLevel = 0;
+    image_barrier_srcImage.subresourceRange.levelCount = VK_REMAINING_MIP_LEVELS;
+    image_barrier_srcImage.subresourceRange.baseArrayLayer = 0;
+    image_barrier_srcImage.subresourceRange.layerCount = VK_REMAINING_ARRAY_LAYERS;
 
     vkCmdPipelineBarrier(essentials->cmd_buffer,
                          VK_PIPELINE_STAGE_TRANSFER_BIT,
                          VK_PIPELINE_STAGE_TRANSFER_BIT,
                          0,
-                         0, NULL,
-                         0, NULL,
+                         0, nullptr,
+                         0, nullptr,
                          1, &image_barrier_srcImage);
 
     vkEndCommandBuffer(essentials->cmd_buffer);
@@ -78,11 +73,10 @@ vk_render_transition_images_screenshot_swapchain_begin(struct vk_device *dev, st
         return retval;
     }
 
-    VkSubmitInfo submit_info = {
-            .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
-            .commandBufferCount = 1,
-            .pCommandBuffers = &essentials->cmd_buffer,
-    };
+    VkSubmitInfo submit_info{};
+    submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    submit_info.commandBufferCount = 1;
+    submit_info.pCommandBuffers = &essentials->cmd_buffer;
 
     vkQueueSubmit(essentials->present_queue, 1, &submit_info, essentials->exec_fence);
     res = vkWaitForFences(dev->device, 1, &essentials->exec_fence, true, 1000000000);
@@ -102,10 +96,11 @@ vk_render_transition_images_screenshot_swapchain_end(struct vk_device *dev, stru
     VkResult res;
 
     vkResetCommandBuffer(essentials->cmd_buffer, 0);
-    VkCommandBufferBeginInfo begin_info = {
-            .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
-            .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,
-    };
+
+    VkCommandBufferBeginInfo begin_info{};
+    begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
     res = vkBeginCommandBuffer(essentials->cmd_buffer, &begin_info);
     vk_error_set_vkresult(&retval, res);
     if (res) {
@@ -113,56 +108,50 @@ vk_render_transition_images_screenshot_swapchain_end(struct vk_device *dev, stru
         return retval;
     }
 
-    VkImageMemoryBarrier image_barrier_dstImage = {
-            .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
-            .srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT,
-            .dstAccessMask = VK_ACCESS_MEMORY_READ_BIT,
-            .oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-            .newLayout = VK_IMAGE_LAYOUT_GENERAL,
-            .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-            .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-            .image = dstImage->image,
-            .subresourceRange = {
-                    .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-                    .baseMipLevel = 0,
-                    .levelCount = VK_REMAINING_MIP_LEVELS,
-                    .baseArrayLayer = 0,
-                    .layerCount = VK_REMAINING_ARRAY_LAYERS,
-            },
-    };
+    VkImageMemoryBarrier image_barrier_dstImage{};
+    image_barrier_dstImage.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+    image_barrier_dstImage.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+    image_barrier_dstImage.dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
+    image_barrier_dstImage.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+    image_barrier_dstImage.newLayout = VK_IMAGE_LAYOUT_GENERAL;
+    image_barrier_dstImage.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    image_barrier_dstImage.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    image_barrier_dstImage.image = dstImage->image;
+    image_barrier_dstImage.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    image_barrier_dstImage.subresourceRange.baseMipLevel = 0;
+    image_barrier_dstImage.subresourceRange.levelCount = VK_REMAINING_MIP_LEVELS;
+    image_barrier_dstImage.subresourceRange.baseArrayLayer = 0;
+    image_barrier_dstImage.subresourceRange.layerCount = VK_REMAINING_ARRAY_LAYERS;
 
     vkCmdPipelineBarrier(essentials->cmd_buffer,
                          VK_PIPELINE_STAGE_TRANSFER_BIT,
                          VK_PIPELINE_STAGE_TRANSFER_BIT,
                          0,
-                         0, NULL,
-                         0, NULL,
+                         0, nullptr,
+                         0, nullptr,
                          1, &image_barrier_dstImage);
 
-    VkImageMemoryBarrier image_barrier_srcImage = {
-            .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
-            .srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT,
-            .dstAccessMask = VK_ACCESS_MEMORY_READ_BIT,
-            .oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-            .newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-            .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-            .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-            .image = srcImage->image,
-            .subresourceRange = {
-                    .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-                    .baseMipLevel = 0,
-                    .levelCount = VK_REMAINING_MIP_LEVELS,
-                    .baseArrayLayer = 0,
-                    .layerCount = VK_REMAINING_ARRAY_LAYERS,
-            },
-    };
+    VkImageMemoryBarrier image_barrier_srcImage{};
+    image_barrier_srcImage.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+    image_barrier_srcImage.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+    image_barrier_srcImage.dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
+    image_barrier_srcImage.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+    image_barrier_srcImage.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+    image_barrier_srcImage.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    image_barrier_srcImage.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    image_barrier_srcImage.image = srcImage->image;
+    image_barrier_srcImage.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    image_barrier_srcImage.subresourceRange.baseMipLevel = 0;
+    image_barrier_srcImage.subresourceRange.levelCount = VK_REMAINING_MIP_LEVELS;
+    image_barrier_srcImage.subresourceRange.baseArrayLayer = 0;
+    image_barrier_srcImage.subresourceRange.layerCount = VK_REMAINING_ARRAY_LAYERS;
 
     vkCmdPipelineBarrier(essentials->cmd_buffer,
                          VK_PIPELINE_STAGE_TRANSFER_BIT,
                          VK_PIPELINE_STAGE_TRANSFER_BIT,
                          0,
-                         0, NULL,
-                         0, NULL,
+                         0, nullptr,
+                         0, nullptr,
                          1, &image_barrier_srcImage);
 
     vkEndCommandBuffer(essentials->cmd_buffer);
@@ -174,11 +163,10 @@ vk_render_transition_images_screenshot_swapchain_end(struct vk_device *dev, stru
         return retval;
     }
 
-    VkSubmitInfo submit_info = {
-            .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
-            .commandBufferCount = 1,
-            .pCommandBuffers = &essentials->cmd_buffer,
-    };
+    VkSubmitInfo submit_info{};
+    submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    submit_info.commandBufferCount = 1;
+    submit_info.pCommandBuffers = &essentials->cmd_buffer;
 
     vkQueueSubmit(essentials->present_queue, 1, &submit_info, essentials->exec_fence);
     res = vkWaitForFences(dev->device, 1, &essentials->exec_fence, true, 1000000000);
@@ -198,12 +186,14 @@ unsigned char ev(int32_t v) {
 }
 
 void write_bmp(uint32_t w, uint32_t h, const uint8_t *rgba) {
-    FILE *f;
-    unsigned char *img = nullptr;
-    auto filesize = static_cast<int32_t>(108 + 14 + 4 * w * h);
+
     static int scr_id = 0;
 
-    img = (unsigned char *) malloc(4 * w * h);
+    if (!rgba) {
+        return;
+    }
+
+    auto img = (unsigned char *) malloc(4 * w * h);
     memset(img, 0, 4 * w * h);
 
     for (unsigned int x = 0; x < w; x++) {
@@ -215,31 +205,32 @@ void write_bmp(uint32_t w, uint32_t h, const uint8_t *rgba) {
         }
     }
 
-    unsigned char bmpfileheader[14] = {'B', 'M', ev(filesize), ev(filesize), ev(filesize), ev(filesize), 0, 0, 0, 0,
-                                       108 + 14, 0, 0, 0};
+    auto filesize = static_cast<int32_t>(108 + 14 + 4 * w * h);
+    unsigned char bmp_file_header[14] = {'B', 'M', ev(filesize), ev(filesize), ev(filesize), ev(filesize), 0, 0, 0, 0,
+                                         108 + 14, 0, 0, 0};
 
-    unsigned char bmpinfoheader[108] = {108, 0, 0, 0,
-                                        ev(static_cast<int32_t>(w)), ev(static_cast<int32_t>(w)), ev(
+    unsigned char bmp_info_header[108] = {108, 0, 0, 0,
+                                          ev(static_cast<int32_t>(w)), ev(static_cast<int32_t>(w)), ev(
                     static_cast<int32_t>(w)), ev(static_cast<int32_t>(w)), ev(-((int32_t) h)), ev(-((int32_t) h)),
-                                        ev(-((int32_t) h)), ev(-((int32_t) h)), 1, 0, 32, 0, 3, 0, 0, 0, ev(
+                                          ev(-((int32_t) h)), ev(-((int32_t) h)), 1, 0, 32, 0, 3, 0, 0, 0, ev(
                     static_cast<int32_t>(w * h * 4)),
-                                        ev(static_cast<int32_t>(w * h * 4)), ev(static_cast<int32_t>(w * h * 4)), ev(
+                                          ev(static_cast<int32_t>(w * h * 4)), ev(static_cast<int32_t>(w * h * 4)), ev(
                     static_cast<int32_t>(w * h * 4)),
-                                        ev(0x0b13), ev(0x0b13), ev(0x0b13), ev(0x0b13), ev(0x0b13), ev(0x0b13),
-                                        ev(0x0b13), ev(0x0b13),
-                                        0, 0, 0, 0, 0, 0, 0, 0,
-                                        0, 0, 0, 0xff, 0, 0, 0xff, 0, 0, 0xff, 0, 0, 0xff, 0, 0, 0,
-                                        ev(0x57696E20), ev(0x57696E20), ev(0x57696E20), ev(0x57696E20),
-                                        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                          ev(0x0b13), ev(0x0b13), ev(0x0b13), ev(0x0b13), ev(0x0b13), ev(0x0b13),
+                                          ev(0x0b13), ev(0x0b13),
+                                          0, 0, 0, 0, 0, 0, 0, 0,
+                                          0, 0, 0, 0xff, 0, 0, 0xff, 0, 0, 0xff, 0, 0, 0xff, 0, 0, 0,
+                                          ev(0x57696E20), ev(0x57696E20), ev(0x57696E20), ev(0x57696E20),
+                                          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                          0,
+                                          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     };
 
-    char file_name[80] = {0};
-    sprintf(file_name, "screenshot_%d.bmp", scr_id++);
-
-    f = fopen(file_name, "wb");
-    fwrite(bmpfileheader, 1, 14, f);
-    fwrite(bmpinfoheader, 1, 108, f);
+    std::ostringstream ss;
+    ss << "screenshot_" << scr_id++ << ".bmp";
+    auto f = fopen(ss.str().c_str(), "wb");
+    fwrite(bmp_file_header, 1, 14, f);
+    fwrite(bmp_info_header, 1, 108, f);
     for (int i = 0; i < h; i++) {
         fwrite(img + (w * (h - static_cast<uint32_t>(i) - 1) * 4), 4, w, f);
     }
@@ -276,23 +267,20 @@ vk_error make_screenshot(struct vk_physical_device *phy_dev, struct vk_device *d
         return retval;
     }
 
-    struct vk_image srcImage = {
-            .image = essentials->images[image_index],
-    };
+    struct vk_image srcImage{};
+    srcImage.image = essentials->images[image_index];
 
-    VkFormat img_format = VK_FORMAT_R8G8B8A8_UNORM; //VK_FORMAT_R8G8B8A8_SRGB
-    struct vk_image dstImage = {
-            .format = img_format,
-            .extent = render_data.main_gbuffers[image_index].surface_size,
-            .usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT,
-            .stage = VK_SHADER_STAGE_FRAGMENT_BIT,
-            .make_view = false,
-            .host_visible = true,
-            .anisotropyEnable = true,
-            .repeat_mode = VK_SAMPLER_ADDRESS_MODE_REPEAT, //VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER //VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE
-            .mipmaps = false,
-            .linear = true,
-    };
+    struct vk_image dstImage{};
+    dstImage.format = VK_FORMAT_R8G8B8A8_UNORM; //VK_FORMAT_R8G8B8A8_SRGB
+    dstImage.extent = render_data.main_gbuffers[image_index].surface_size;
+    dstImage.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+    dstImage.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
+    dstImage.make_view = false;
+    dstImage.host_visible = true;
+    dstImage.anisotropyEnable = true;
+    dstImage.repeat_mode = VK_SAMPLER_ADDRESS_MODE_REPEAT; //VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER //VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE
+    dstImage.mipmaps = false;
+    dstImage.linear = true;
 
     retval = vk_create_images(phy_dev, dev, &dstImage, 1);
     if (!vk_error_is_success(&retval)) {
@@ -305,21 +293,14 @@ vk_error make_screenshot(struct vk_physical_device *phy_dev, struct vk_device *d
         return retval;
     }
 
-    VkImageCopy imageCopyRegion = {
-            .srcSubresource = {
-                    .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-                    .layerCount = 1,
-            },
-            .dstSubresource = {
-                    .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-                    .layerCount = 1,
-            },
-            .extent = {
-                    .width = dstImage.extent.width,
-                    .height = dstImage.extent.height,
-                    .depth = 1,
-            }
-    };
+    VkImageCopy imageCopyRegion{};
+    imageCopyRegion.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    imageCopyRegion.srcSubresource.layerCount = 1;
+    imageCopyRegion.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    imageCopyRegion.dstSubresource.layerCount = 1;
+    imageCopyRegion.extent.width = dstImage.extent.width;
+    imageCopyRegion.extent.height = dstImage.extent.height;
+    imageCopyRegion.extent.depth = 1;
 
     retval = vk_render_copy_image(dev, essentials, &dstImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &srcImage,
                                   VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, &imageCopyRegion, "screenshot");
@@ -333,7 +314,9 @@ vk_error make_screenshot(struct vk_physical_device *phy_dev, struct vk_device *d
         return retval;
     }
 
-    VkImageSubresource subResource = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 0};
+    VkImageSubresource subResource{};
+    subResource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+
     VkSubresourceLayout subResourceLayout;
     vkGetImageSubresourceLayout(dev->device, dstImage.image, &subResource, &subResourceLayout);
 

@@ -21,8 +21,8 @@ static const struct xdg_wm_base_listener xdg_wm_base_listener = {xdg_wm_base_pin
 static void seatCapabilities(struct wl_seat *seat, uint32_t caps, struct app_os_window *os_window);
 
 static void seatCapabilitiesCb(void *data, struct wl_seat *seat, uint32_t caps) {
-    auto os_window = static_cast<struct app_os_window *>(data);
-    seatCapabilities(seat, caps, os_window);
+    auto w = static_cast<struct app_os_window *>(data);
+    seatCapabilities(seat, caps, w);
 }
 
 void registryGlobal(struct wl_registry *registry, uint32_t name, const char *interface, uint32_t /* version */,
@@ -56,22 +56,23 @@ static void setSize(int width, int height, struct app_os_window *os_window) {
 }
 
 static void xdg_surface_handle_configure(void *data, struct xdg_surface *surface, uint32_t serial) {
-    auto os_window = static_cast<struct app_os_window *>(data);
+    auto w = static_cast<struct app_os_window *>(data);
     xdg_surface_ack_configure(surface, serial);
-    os_window->configured = true;
+    w->configured = true;
 }
 
 static const struct xdg_surface_listener xdg_surface_listener = {xdg_surface_handle_configure,};
 
-static void xdg_toplevel_handle_configure(void *data, struct xdg_toplevel *toplevel, int32_t width, int32_t height,
-                                          struct wl_array *states) {
-    auto os_window = static_cast<struct app_os_window *>(data);
-    setSize(width, height, os_window);
+static void
+xdg_toplevel_handle_configure(void *data, struct xdg_toplevel * /* toplevel */, int32_t width, int32_t height,
+                              struct wl_array * /* states */) {
+    auto w = static_cast<struct app_os_window *>(data);
+    setSize(width, height, w);
 }
 
-static void xdg_toplevel_handle_close(void *data, struct xdg_toplevel *xdg_toplevel) {
-    auto os_window = static_cast<struct app_os_window *>(data);
-    os_window->app_data.quit = true;
+static void xdg_toplevel_handle_close(void *data, struct xdg_toplevel * /*xdg_toplevel */) {
+    auto w = static_cast<struct app_os_window *>(data);
+    w->app_data.quit = true;
 }
 
 static const struct xdg_toplevel_listener xdg_toplevel_listener = {xdg_toplevel_handle_configure,
@@ -79,28 +80,32 @@ static const struct xdg_toplevel_listener xdg_toplevel_listener = {xdg_toplevel_
 
 static void
 registryGlobalCb(void *data, struct wl_registry *registry, uint32_t name, const char *interface, uint32_t version) {
-    auto os_window = static_cast<struct app_os_window *>(data);
-    registryGlobal(registry, name, interface, version, os_window);
+    auto w = static_cast<struct app_os_window *>(data);
+    registryGlobal(registry, name, interface, version, w);
 }
 
 static void
-pointerEnterCb(void *data, struct wl_pointer *pointer, uint32_t serial, struct wl_surface *surface, wl_fixed_t sx,
-               wl_fixed_t sy) {}
+pointerEnterCb(void * /* data */, struct wl_pointer * /* pointer */, uint32_t /* serial */,
+               struct wl_surface * /* surface */,
+               wl_fixed_t /* sx */,
+               wl_fixed_t /* sy */) {}
 
-static void pointerLeaveCb(void *data, struct wl_pointer *pointer, uint32_t serial, struct wl_surface *surface) {}
+static void pointerLeaveCb(void * /* data */, struct wl_pointer * /* pointer */, uint32_t /* serial */,
+                           struct wl_surface * /* surface */) {}
 
-static void pointerMotion(struct wl_pointer *pointer, uint32_t time, wl_fixed_t sx, wl_fixed_t sy,
+static void pointerMotion(struct wl_pointer * /* pointer */, uint32_t /* time */, wl_fixed_t sx, wl_fixed_t sy,
                           struct app_os_window *os_window) {
     os_window->app_data.iMouse[0] = wl_fixed_to_int(sx);
     os_window->app_data.iMouse[1] = os_window->app_data.iResolution[1] - wl_fixed_to_int(sy);
 }
 
 static void pointerMotionCb(void *data, struct wl_pointer *pointer, uint32_t time, wl_fixed_t sx, wl_fixed_t sy) {
-    auto os_window = static_cast<struct app_os_window *>(data);
-    pointerMotion(pointer, time, sx, sy, os_window);
+    auto w = static_cast<struct app_os_window *>(data);
+    pointerMotion(pointer, time, sx, sy, w);
 }
 
-static void pointerButton(struct wl_pointer *pointer, uint32_t serial, uint32_t time, uint32_t button, uint32_t state,
+static void pointerButton(struct wl_pointer * /*pointer */, uint32_t /* serial */, uint32_t /* time */, uint32_t button,
+                          uint32_t state,
                           struct app_os_window *os_window) {
     switch (button) {
         case BTN_LEFT:
@@ -132,33 +137,35 @@ static void pointerButton(struct wl_pointer *pointer, uint32_t serial, uint32_t 
 
 static void pointerButtonCb(void *data, struct wl_pointer *pointer, uint32_t serial, uint32_t time, uint32_t button,
                             uint32_t state) {
-    auto os_window = static_cast<struct app_os_window *>(data);
-    pointerButton(pointer, serial, time, button, state, os_window);
+    auto w = static_cast<struct app_os_window *>(data);
+    pointerButton(pointer, serial, time, button, state, w);
 }
 
-static void pointerAxis(struct wl_pointer *pointer, uint32_t time, uint32_t axis, wl_fixed_t value,
-                        struct app_os_window *os_window) {
-    float d = wl_fixed_to_double(value);
-    switch (axis) {
-        case REL_X:
-            //printf("mouse wheel %f\n",d);
-            break;
+static void pointerAxis(struct wl_pointer * /* pointer */, uint32_t /* time */, uint32_t axis, wl_fixed_t value,
+                        struct app_os_window * /* os_window */) {
+    double d = wl_fixed_to_double(value);
+    if (axis == REL_X) {
+        printf("mouse wheel %f\n", d);
     }
 }
 
 static void pointerAxisCb(void *data, struct wl_pointer *pointer, uint32_t time, uint32_t axis, wl_fixed_t value) {
-    auto os_window = static_cast<struct app_os_window *>(data);
-    pointerAxis(pointer, time, axis, value, os_window);
+    auto w = static_cast<struct app_os_window *>(data);
+    pointerAxis(pointer, time, axis, value, w);
 }
 
-static void keyboardKeymapCb(void *data, struct wl_keyboard *keyboard, uint32_t format, int fd, uint32_t size) {}
+static void keyboardKeymapCb(void * /* data */, struct wl_keyboard * /*keyboard */, uint32_t /* format */, int /* fd */,
+                             uint32_t /* size */) {}
 
-static void keyboardEnterCb(void *data, struct wl_keyboard *keyboard, uint32_t serial, struct wl_surface *surface,
-                            struct wl_array *keys) {}
+static void keyboardEnterCb(void * /* data */, struct wl_keyboard * /*keyboard */, uint32_t /* serial */,
+                            struct wl_surface * /* surface */,
+                            struct wl_array * /* keys */) {}
 
-static void keyboardLeaveCb(void *data, struct wl_keyboard *keyboard, uint32_t serial, struct wl_surface *surface) {}
+static void keyboardLeaveCb(void * /* data */, struct wl_keyboard * /* keyboard */, uint32_t /* serial */,
+                            struct wl_surface * /*surface */) {}
 
-static void keyboardKey(struct wl_keyboard *keyboard, uint32_t serial, uint32_t time, uint32_t key, uint32_t state,
+static void keyboardKey(struct wl_keyboard * /* keyboard */, uint32_t /* serial */, uint32_t /* time */, uint32_t key,
+                        uint32_t state,
                         struct app_os_window *os_window) {
     uint8_t keyA = get_ASCII_key((uint8_t) key);
     if (state) {
@@ -183,8 +190,9 @@ keyboardKeyCb(void *data, struct wl_keyboard *keyboard, uint32_t serial, uint32_
     keyboardKey(keyboard, serial, time, key, state, os_window);
 }
 
-static void keyboardModifiersCb(void *data, struct wl_keyboard *keyboard, uint32_t serial, uint32_t mods_depressed,
-                                uint32_t mods_latched, uint32_t mods_locked, uint32_t group) {}
+static void keyboardModifiersCb(void * /* data */, struct wl_keyboard * /* keyboard */, uint32_t /* serial */,
+                                uint32_t /* mods_depressed */,
+                                uint32_t /* mods_latched */, uint32_t /* mods_locked */, uint32_t /* group */) {}
 
 static void seatCapabilities(struct wl_seat *seat, uint32_t caps, struct app_os_window *os_window) {
     if ((caps & WL_SEAT_CAPABILITY_POINTER) && !os_window->pointer) {
@@ -210,7 +218,7 @@ static void seatCapabilities(struct wl_seat *seat, uint32_t caps, struct app_os_
 }
 
 
-static void registryGlobalRemoveCb(void *data, struct wl_registry *registry, uint32_t name) {}
+static void registryGlobalRemoveCb(void * /* data */, struct wl_registry * /* registry */, uint32_t /* name */) {}
 
 void initWaylandConnection(struct app_os_window *os_window) {
     os_window->display = wl_display_connect(nullptr);
@@ -493,5 +501,4 @@ static void gen_key_map() {
     local_k_map[(uint8_t) max(min(keycode, 0xff), 0)] = Key_CloseBraket;
     keycode = KEY_APOSTROPHE;
     local_k_map[(uint8_t) max(min(keycode, 0xff), 0)] = Key_SingleQuote;
-
 }

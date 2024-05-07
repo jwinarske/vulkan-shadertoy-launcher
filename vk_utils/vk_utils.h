@@ -2,10 +2,8 @@
 // Danil, 2021+ Vulkan shader launcher, self https://github.com/danilw/vulkan-shadertoy-launcher
 // The MIT License
 
-#ifndef vk_utils_H
-#define vk_utils_H
+#pragma once
 
-#include <vulkan/vulkan.h>
 #include <cstdlib>
 #include <cstring>
 #include <cstdarg>
@@ -14,6 +12,11 @@
 #include <cassert>
 #include <cmath>
 #include "vk_error_print.h"
+
+#define VULKAN_HPP_NO_EXCEPTIONS 1
+#define VULKAN_HPP_DISPATCH_LOADER_DYNAMIC 1
+
+#include <vulkan/vulkan.hpp>
 
 #if defined(VK_USE_PLATFORM_XCB_KHR)
 #include <X11/Xutil.h>
@@ -32,8 +35,6 @@
 #include "../yariv/yariv.h"
 #endif
 
-#define MAX(x, y) (((x) > (y)) ? (x) : (y))
-#define MIN(x, y) (((x) < (y)) ? (x) : (y))
 
 void vk_exit(VkInstance vk);
 
@@ -76,6 +77,7 @@ static inline vk_error vk_init(VkInstance *vk) {
             VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME,
 #endif
     };
+    VULKAN_HPP_DEFAULT_DISPATCHER.init();
     return vk_init_ext(vk, extension_names, sizeof extension_names / sizeof *extension_names);
 }
 
@@ -165,5 +167,3 @@ vk_error vk_create_graphics_buffers(struct vk_physical_device *phy_dev, struct v
 void vk_free_offscreen_buffers(struct vk_device *dev, struct vk_offscreen_buffers *offscreen_buffers,
                                uint32_t offscreen_buffer_count,
                                VkRenderPass render_pass);
-
-#endif

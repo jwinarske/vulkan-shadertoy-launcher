@@ -284,10 +284,10 @@ vk_error vk_render_transition_images(struct vk_device *dev, struct vk_render_ess
     VkResult res;
 
     vkResetCommandBuffer(essentials->cmd_buffer, 0);
-    VkCommandBufferBeginInfo begin_info = {
-            .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
-            .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,
-    };
+
+    VkCommandBufferBeginInfo begin_info{};
+    begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
     res = vkBeginCommandBuffer(essentials->cmd_buffer, &begin_info);
     vk_error_set_vkresult(&retval, res);
     if (res) {
@@ -295,22 +295,20 @@ vk_error vk_render_transition_images(struct vk_device *dev, struct vk_render_ess
         return retval;
     }
 
-    VkImageMemoryBarrier image_barrier = {
-            .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
-            .srcAccessMask = 0,
-            .dstAccessMask = 0,
-            .oldLayout = from,
-            .newLayout = to,
-            .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-            .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-            .subresourceRange = {
-                    .aspectMask = aspect,
-                    .baseMipLevel = 0,
-                    .levelCount = VK_REMAINING_MIP_LEVELS,
-                    .baseArrayLayer = 0,
-                    .layerCount = VK_REMAINING_ARRAY_LAYERS,
-            },
-    };
+    VkImageMemoryBarrier image_barrier{};
+
+    image_barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+    image_barrier.srcAccessMask = 0;
+    image_barrier.dstAccessMask = 0;
+    image_barrier.oldLayout = from;
+    image_barrier.newLayout = to;
+    image_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    image_barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    image_barrier.subresourceRange.aspectMask = aspect;
+    image_barrier.subresourceRange.baseMipLevel = 0;
+    image_barrier.subresourceRange.levelCount = VK_REMAINING_MIP_LEVELS;
+    image_barrier.subresourceRange.baseArrayLayer = 0;
+    image_barrier.subresourceRange.layerCount = VK_REMAINING_ARRAY_LAYERS;
 
     for (uint32_t i = 0; i < image_count; ++i) {
         image_barrier.image = images[i].image;
@@ -332,11 +330,10 @@ vk_error vk_render_transition_images(struct vk_device *dev, struct vk_render_ess
         return retval;
     }
 
-    VkSubmitInfo submit_info = {
-            .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
-            .commandBufferCount = 1,
-            .pCommandBuffers = &essentials->cmd_buffer,
-    };
+    VkSubmitInfo submit_info{};
+    submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    submit_info.commandBufferCount = 1;
+    submit_info.pCommandBuffers = &essentials->cmd_buffer;
 
     vkQueueSubmit(essentials->present_queue, 1, &submit_info, essentials->exec_fence);
     res = vkWaitForFences(dev->device, 1, &essentials->exec_fence, true, 1000000000);
@@ -350,11 +347,10 @@ vk_error create_staging_buffer(struct vk_physical_device *phy_dev, struct vk_dev
                                uint8_t *contents, size_t size, const char *name) {
     vk_error retval = VK_ERROR_NONE;
 
-    *staging = (struct vk_buffer) {
-            .size = static_cast<uint32_t>(size),
-            .usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-            .host_visible = true,
-    };
+    *staging = {};
+    staging->size = static_cast<uint32_t>(size);
+    staging->usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+    staging->host_visible = true;
 
     retval = vk_create_buffers(phy_dev, dev, staging, 1);
     if (!vk_error_is_success(&retval)) {
@@ -385,10 +381,9 @@ vk_error vk_render_transition_images_mipmaps(struct vk_physical_device *phy_dev,
     }
 
     vkResetCommandBuffer(essentials->cmd_buffer, 0);
-    VkCommandBufferBeginInfo begin_info = {
-            .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
-            .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,
-    };
+    VkCommandBufferBeginInfo begin_info{};
+    begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
     res = vkBeginCommandBuffer(essentials->cmd_buffer, &begin_info);
     vk_error_set_vkresult(&retval, res);
     if (res) {
@@ -398,20 +393,18 @@ vk_error vk_render_transition_images_mipmaps(struct vk_physical_device *phy_dev,
 
     auto mipWidth = static_cast<int32_t>(image->extent.width);
     auto mipHeight = static_cast<int32_t>(image->extent.height);
-    uint32_t mipLevels = (int) (log(MAX(image->extent.width, image->extent.height)) / log(2)) + 1;
+    auto mipLevels = static_cast<uint32_t>((log(std::min(image->extent.width, image->extent.height)) / log(2)) + 1);
 
-    VkImageMemoryBarrier image_barrier = {
-            .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
-            .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-            .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-            .image = image->image,
-            .subresourceRange = {
-                    .aspectMask = aspect,
-                    .levelCount = 1,
-                    .baseArrayLayer = 0,
-                    .layerCount = 1,
-            },
-    };
+    VkImageMemoryBarrier image_barrier{};
+    image_barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+    image_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    image_barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    image_barrier.image = image->image;
+
+    image_barrier.subresourceRange.aspectMask = aspect;
+    image_barrier.subresourceRange.levelCount = 1;
+    image_barrier.subresourceRange.baseArrayLayer = 0;
+    image_barrier.subresourceRange.layerCount = 1;
 
     for (uint32_t i = 1; i < mipLevels; i++) {
         image_barrier.subresourceRange.baseMipLevel = i - 1;
@@ -593,7 +586,7 @@ vk_error vk_render_init_buffer(struct vk_physical_device *phy_dev, struct vk_dev
     vk_error retval = VK_ERROR_NONE;
 
     struct vk_buffer staging;
-    retval = create_staging_buffer(phy_dev, dev, &staging, (uint8_t *)contents, buffer->size, name);
+    retval = create_staging_buffer(phy_dev, dev, &staging, (uint8_t *) contents, buffer->size, name);
     if (!vk_error_is_success(&retval))
         return retval;
 

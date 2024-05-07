@@ -1,3 +1,7 @@
+#pragma once
+
+#include <chrono>
+#include <thread>
 
 struct my_time_struct {
     int msec;
@@ -57,9 +61,9 @@ void get_local_time(struct my_time_struct *my_time){
 #include <sys/time.h>
 
 void get_local_time(struct my_time_struct *my_time) {
-    struct timeval te;
-    gettimeofday(&te, NULL);
-    time_t T = time(NULL);
+    struct timeval te{};
+    gettimeofday(&te, nullptr);
+    time_t T = time(nullptr);
     struct tm tm = *localtime(&T);
     long long milliseconds = te.tv_sec * 1000LL + te.tv_usec / 1000;
     my_time->msec = (int) (milliseconds % (1000));
@@ -74,7 +78,7 @@ void get_local_time(struct my_time_struct *my_time) {
 #endif
 
 double get_time_ticks() {
-    struct timespec ts;
+    struct timespec ts{};
     clock_gettime(CLOCK_MONOTONIC_RAW, &ts);
     double ticks = (static_cast<double>(ts.tv_sec * 1000)) + (static_cast<double>(ts.tv_nsec)) / 1000000.0;
     return ticks;
@@ -125,10 +129,7 @@ void sleep_ms(int milliseconds) {
 #ifdef WIN32
     Sleep(milliseconds);
 #else
-    struct timespec ts;
-    ts.tv_sec = milliseconds / 1000;
-    ts.tv_nsec = (milliseconds % 1000) * 1000000;
-    nanosleep(&ts, nullptr);
+    std::this_thread::sleep_for(std::chrono::milliseconds(milliseconds));
 #endif
 }
 

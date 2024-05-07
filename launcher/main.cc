@@ -39,13 +39,15 @@
 #pragma comment(linker, "/subsystem:windows")
 #endif
 
+
 #include <ctime>
 #include "../vk_utils/vk_utils.h"
 #include "../vk_utils/vk_render_helper.h"
 #include "../os_utils/utils.h"
 
+
 #if defined(VK_USE_PLATFORM_WAYLAND_KHR)
-static int resize_size[2] = {1280, 720}; // in Wayland surface should set own size
+static uint32_t resize_size[2] = {1280, 720}; // in Wayland surface should set own size
 #endif
 
 static bool main_image_srgb = false; // srgb surface fix
@@ -81,10 +83,10 @@ static bool main_image_srgb = false; // srgb surface fix
 #define USE_SCREENSHOT
 
 // keyboard is texture that send from this data
-static bool keyboard_map[0xff][3] = {0}; //[ASCII code][0: current state of key, 1: Keypress, 2: toggle for key]
-static uint8_t keyboard_texture[256 * 3 * 4] = {0}; // texture
-static bool keyboard_need_update = false;
-static bool keyboard_draw = false;
+static bool keyboard_map[0xff][3]{}; //[ASCII code][0: current state of key, 1: Keypress, 2: toggle for key]
+static uint8_t keyboard_texture[256 * 3 * 4]{}; // texture
+static bool keyboard_need_update{};
+static bool keyboard_draw{};
 
 // update to 2021 Shadertoy iMouse.w change https://www.shadertoy.com/view/llySRh (comments)
 static bool last_iMousel_clicked[2] = {false, false};
@@ -175,14 +177,12 @@ struct render_data {
     VkDescriptorSet main_desc_set;
 };
 
-struct render_data render_data = {
-        .main_gbuffers = NULL,
-        .buf_obuffers = NULL,
-};
-VkInstance vk;
+struct render_data render_data{};
+
+VkInstance instance;
 struct vk_physical_device phy_dev;
 struct vk_device dev;
-struct vk_swapchain swapchain = {0};
+struct vk_swapchain swapchain{};
 struct app_os_window os_window;
 struct vk_render_essentials essentials;
 
@@ -245,14 +245,16 @@ static void update_keypress() {
     keyboard_need_update = false;
 }
 
-static bool update_iKeyboard_texture(struct vk_physical_device *phy_dev, struct vk_device *dev,
-                                     struct vk_render_essentials *essentials, struct render_data *render_data) {
+static bool update_iKeyboard_texture(struct vk_physical_device * /* phy_dev */, struct vk_device * /* dev */,
+                                     struct vk_render_essentials * /* essentials */,
+                                     struct render_data * /* render_data */) {
+#if 0
     vk_error retval = VK_ERROR_NONE;
     VkResult res;
     if (!keyboard_draw)
         return true;
     if (!essentials->first_render) {
-        res = vkWaitForFences(dev->device, 1, &essentials->exec_fence, true, 1000000000);
+        res = d.vkWaitForFences(dev->device, 1, &essentials->exec_fence, true, 1000000000);
         vk_error_set_vkresult(&retval, res);
         if (res) {
             vk_error_printf(&retval, "Wait for fence failed\n");
@@ -265,7 +267,7 @@ static bool update_iKeyboard_texture(struct vk_physical_device *phy_dev, struct 
                                      VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, keyboard_texture, "iKeyboard");
     if (!vk_error_is_success(&retval))
         return false;
-
+#endif
     return true;
 }
 
@@ -275,7 +277,7 @@ static bool key_screenshot_once = true;
 static bool screenshot_once = false;
 
 static void check_hotkeys(struct app_os_window *os_window) {
-    const int Key_Escape = 27, Key_Space = 32, Key_0 = 48, Key_1 = 49, Key_f = 70, Key_z = 90, Key_f11 = 122;
+    const int Key_Escape = 27, Key_Space = 32, Key_0 = 48, Key_1 = 49, Key_f = 70, Key_z = 90;
     if (keyboard_map[Key_Escape][1])
         os_window->app_data.quit = true;
     if (keyboard_map[Key_Space][1])
@@ -452,10 +454,10 @@ static vk_error allocate_render_data(struct vk_physical_device *phy_dev, struct 
         }
 #endif
     }
-    struct VkExtent2D init_size;
+    struct VkExtent2D init_size{};
 #if defined(VK_USE_PLATFORM_WAYLAND_KHR)
-    init_size.width = static_cast<uint32_t>(resize_size[0]);
-    init_size.height = static_cast<uint32_t>(resize_size[1]);
+    init_size.width = resize_size[0];
+    init_size.height = resize_size[1];
 #else
     init_size.width = swapchain->surface_caps.currentExtent.width;
     init_size.height = swapchain->surface_caps.currentExtent.height;
@@ -515,7 +517,7 @@ static vk_error allocate_render_data(struct vk_physical_device *phy_dev, struct 
     }
 #endif
 
-    struct vk_image **image_pointer; //&render_data->buf_obuffers[2].color
+    struct vk_image **image_pointer;
     image_pointer = (struct vk_image **) malloc(
             1 * sizeof(struct vk_image *) * (IMAGE_TEXTURES + OFFSCREEN_BUFFERS + iKeyboard));
     for (uint32_t i = 0; i < IMAGE_TEXTURES + OFFSCREEN_BUFFERS + iKeyboard; i++) {
@@ -882,8 +884,8 @@ static bool on_window_resize(struct vk_physical_device *phy_dev, struct vk_devic
     os_window->prepared = false;
 
 #if defined(VK_USE_PLATFORM_WAYLAND_KHR)
-    resize_size[0] = os_window->app_data.iResolution[0];
-    resize_size[1] = os_window->app_data.iResolution[1];
+    resize_size[0] = static_cast<uint32_t>(os_window->app_data.iResolution[0]);
+    resize_size[1] = static_cast<uint32_t>(os_window->app_data.iResolution[1]);
 #endif
 
     vk_free_pipelines(dev, &render_data->main_pipeline, 1);
@@ -909,10 +911,10 @@ static bool on_window_resize(struct vk_physical_device *phy_dev, struct vk_devic
     free(render_data->buf_obuffers);
 #endif
 
-    res = vk_get_swapchain(vk, phy_dev, dev, swapchain, os_window, 1, &os_window->present_mode);
+    res = vk_get_swapchain(instance, phy_dev, dev, swapchain, os_window, 1, &os_window->present_mode);
     if (vk_error_is_error(&res)) {
         vk_error_printf(&res, "Could not create surface and swapchain\n");
-        exit_cleanup(vk, dev, swapchain, os_window);
+        exit_cleanup(instance, dev, swapchain, os_window);
         return false;
     }
 
@@ -1284,8 +1286,8 @@ static bool render_loop_draw(struct vk_physical_device *phy_dev, struct vk_devic
         first_submission = true;
         return true;
     } else if (result == VK_ERROR_SURFACE_LOST_KHR) {
-        vkDestroySurfaceKHR(vk, swapchain->surface, NULL);
-        retval = vk_create_surface(vk, &swapchain->surface, os_window);
+        vkDestroySurfaceKHR(instance, swapchain->surface, NULL);
+        retval = vk_create_surface(instance, &swapchain->surface, os_window);
         if (!vk_error_is_success(&retval))
             return false;
         os_window->resize_event = true;
@@ -1413,8 +1415,8 @@ static bool render_loop_draw(struct vk_physical_device *phy_dev, struct vk_devic
         os_window->resize_event = true;
         result = 0;
     } else if (result == VK_ERROR_SURFACE_LOST_KHR) {
-        vkDestroySurfaceKHR(vk, swapchain->surface, NULL);
-        retval = vk_create_surface(vk, &swapchain->surface, os_window);
+        vkDestroySurfaceKHR(instance, swapchain->surface, NULL);
+        retval = vk_create_surface(instance, &swapchain->surface, os_window);
         if (!vk_error_is_success(&retval))
             return false;
         os_window->resize_event = true;
@@ -1443,8 +1445,8 @@ void init_win_params(struct app_os_window *os_window) {
     os_window->app_data.iResolution[0] = 1280;
     os_window->app_data.iResolution[1] = 720;
 #if defined(VK_USE_PLATFORM_WAYLAND_KHR)
-    resize_size[0] = os_window->app_data.iResolution[0];
-    resize_size[1] = os_window->app_data.iResolution[1];
+    resize_size[0] = static_cast<uint32_t>(os_window->app_data.iResolution[0]);
+    resize_size[1] = static_cast<uint32_t>(os_window->app_data.iResolution[1]);
 #endif
     os_window->app_data.iFrame = 0;
     os_window->app_data.iMouse[0] = 0;
@@ -1879,8 +1881,6 @@ int main(int argc, char **argv) {
             continue;
         }
     }
-
-    srand(time(NULL));
 
     res = vk_init(&vk);
     if (!vk_error_is_success(&res)) {
